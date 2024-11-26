@@ -1,2 +1,2 @@
-def hello() -> None:
-    print("Hello from distilabel-steps-library!")
+def hey() -> str:
+    return "hi"
