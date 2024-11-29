@@ -1,7 +1,7 @@
 [project]
 name = "distilabel-steps-library"
 version = "0.1.0"
-description = "A bunch of steps for distilabel"
+description = "A bunch of steps for distilabel."
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = ["distilabel>=1.4.1"]
