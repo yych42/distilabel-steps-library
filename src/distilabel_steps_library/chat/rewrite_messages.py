@@ -4,7 +4,7 @@ from distilabel.steps.tasks import Task
 from distilabel.steps.base import StepInput
 
 if TYPE_CHECKING:
-    from distilabel.steps.typing import StepColumns, StepOutput
+    from distilabel.steps.typing import StepColumns, StepOutput, ChatType
 
 
 class RewriteMessages(Task):
@@ -38,18 +38,9 @@ class RewriteMessages(Task):
         target_role (str): The role of the messages to target for rewriting.
     """
 
-    def __init__(
-        self,
-        name: str,
-        llm: Any,
-        instructions: str,
-        should_process_fn: Callable[[str], bool],
-        target_role: str,
-    ) -> None:
-        super().__init__(name=name, llm=llm)
-        self.instructions = instructions
-        self.should_process_fn = should_process_fn
-        self.target_role = target_role
+    instructions: str
+    should_process_fn: Callable[[str], bool]
+    target_role: str
 
     @property
     def inputs(self) -> "StepColumns":
@@ -80,6 +71,18 @@ class RewriteMessages(Task):
                         message.get("content", "")
                     ):
                         prompt = f"```{message['content']}```\n\n{self.instructions}"
-                        generation = self.llm.generate(prompt)
+                        generation = self.llm.generate(
+                            [[{"role": "user", "content": prompt}]],
+                            **self.llm.generation_kwargs,
+                        )[0][0]
+                        print(generation)
                         message["content"] = generation
             yield input_batch
+
+    def format_input(self, input: Dict[str, Any]) -> "ChatType":
+        # Convert the input dictionary to the expected messages list
+        return input.get("messages", [])
+
+    def format_output(self, output: Any, input: Dict[str, Any]) -> Dict[str, Any]:
+        # Return the output wrapped in a dictionary with the key 'messages'
+        return {"messages": output}
